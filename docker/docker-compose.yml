@@ -1,0 +1,28 @@
+version: '3.1'
+services: 
+    db00a:
+        image: postgres:13.3
+        restart: always
+        environment:
+          - POSTGRES_USER=db00auser
+          - POSTGRES_PASSWORD=db00apass
+        logging:
+          options:
+            max-size: 10m
+            max-file: "3"            
+    start_dependencies:
+        image: dadarek/wait-for-dependencies
+        depends_on:
+            - db00a
+        command: db00a:5432
+    dart-alembic:
+        build: 
+            context: .
+            dockerfile: docker/Dockerfile
+        image: dart-alembic
+        volumes: 
+            - .:/work
+            - "/var/run/docker.sock:/var/run/docker.sock"
+        depends_on: 
+            - start_dependencies
+
