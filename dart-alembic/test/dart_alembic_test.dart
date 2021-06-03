@@ -13,9 +13,13 @@ void main() {
       conn = await makeTestDatabase();
     });
 
+    tearDown(() async {
+      await dropTestDatabase(conn);
+      await conn.close();
+    });
+
     test('First Test', () async {
       assert(!conn.isClosed);
-      await conn.close();
       expect(awesome.isAwesome, isTrue);
     });
   });
