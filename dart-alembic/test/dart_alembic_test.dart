@@ -4,16 +4,17 @@ import 'package:test/test.dart';
 import 'init_db.dart';
 
 void main() {
-  group('A group of tests', () {
+  const DBNAME = '_unit_test_1';
+  group('migration utilities tests', () {
     late AlembicConnector conn;
 
     setUp(() async {
-      conn = await makeTestDatabase();
+      conn = await makeTestDatabase(DBNAME);
     });
 
     tearDown(() async {
       await conn.close();
-      await dropTestDatabase();
+      await dropTestDatabase(DBNAME);
     });
 
     test('DB basic operations check', () async {
