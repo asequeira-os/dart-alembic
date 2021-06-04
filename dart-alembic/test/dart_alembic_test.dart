@@ -17,12 +17,12 @@ void main() {
       await conn.close();
       await dropTestDatabase();
     });
-
-    test('First Test', () async {
+ 
+    test('DB basic operations check', () async {
       final tbl = PostgresAlembicConnector.migrationTable;
       assert(conn.isOpen);
       await conn.ensureMigrationTable();
-      await conn.query('''INSERT INTO $tbl (migration_id) VALUES ('ZZZZ')''');
+      await conn.query('''INSERT INTO $tbl (migration_id, name) VALUES ('ZZZZ', 'fooo')''');
       final foo = await conn.query('select migration_id from $tbl');
       expect(foo, [
         {

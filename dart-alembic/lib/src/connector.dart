@@ -18,6 +18,7 @@ class PostgresAlembicConnector extends AlembicConnector {
   static const _tableSql = '''
     CREATE TABLE IF NOT EXISTS $migrationTable (
       migration_id varchar(45) NOT NULL,
+      name varchar(45) NOT NULL,
       created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   ''';
