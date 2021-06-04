@@ -4,6 +4,18 @@ import 'connector.dart';
 
 const uuid = Uuid();
 
+class MigrationRow {
+  final String name;
+  final String id;
+  final DateTime? created;
+
+  MigrationRow(this.name, this.id) : created = null;
+  MigrationRow.fromJson(Map<String, dynamic> json)
+      : name = json['name'],
+        id = json['migration_id'],
+        created = json['created'];
+}
+
 abstract class Migration {
   /// should not be changed once specified.
   ///
@@ -11,7 +23,7 @@ abstract class Migration {
   final String name;
 
   /// typical derived class will have a no-args constructor
-  /// 
+  ///
   /// that should call super with a unique name
   Migration(this.name);
 
@@ -19,6 +31,8 @@ abstract class Migration {
   String get migrationId {
     return uuid.v5(Uuid.NAMESPACE_URL, name);
   }
+
+  MigrationRow get asDbRow => MigrationRow(name, migrationId);
 
   /// implement using [conn]
   void execute(AlembicConnector conn);
@@ -39,4 +53,5 @@ class Migrations {
     migrations[name] = migration;
     order.add(name);
   }
+
 }

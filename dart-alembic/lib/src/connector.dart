@@ -10,13 +10,15 @@ abstract class AlembicConnector {
   Future<void> ensureMigrationTable();
   Future<void> ddl(String sql);
   Future<SqlRows> query(String sql);
+
+  String get migrationTable;
 }
 
 class PostgresAlembicConnector extends AlembicConnector {
   final PostgreSQLConnection conn;
-  static const migrationTable = '__migration';
+  static const _migrationTable = '__migration';
   static const _tableSql = '''
-    CREATE TABLE IF NOT EXISTS $migrationTable (
+    CREATE TABLE IF NOT EXISTS $_migrationTable (
       migration_id char(36) NOT NULL,
       name varchar(100) NOT NULL,
       created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -52,4 +54,7 @@ class PostgresAlembicConnector extends AlembicConnector {
   Future<SqlRows> query(String sql) {
     return conn.mappedResultsQuery(sql);
   }
+
+  @override
+  String get migrationTable => _migrationTable;
 }

@@ -23,6 +23,15 @@ class MigrationB extends Migration {
   }
 }
 
+class MigrationC extends Migration {
+  MigrationC() : super('table ccc');
+
+  @override
+  void execute(AlembicConnector conn) {
+    print('executing migration ccc');
+  }
+}
+
 void main() {
   const DBNAME = '_unit_test_2';
 
@@ -43,6 +52,9 @@ void main() {
       migs.add(MigrationA());
       migs.add(MigrationB());
 
+      await MigrationsExecutor(migs).execute(conn);
+
+      migs.add(MigrationC());
       await MigrationsExecutor(migs).execute(conn);
     });
   });

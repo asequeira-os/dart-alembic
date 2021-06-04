@@ -19,7 +19,7 @@ void main() {
 
     test('DB basic operations check', () async {
       final chars36 = '012345678901234567890123456789123456';
-      final tbl = PostgresAlembicConnector.migrationTable;
+      final tbl = conn.migrationTable;
       assert(conn.isOpen);
       await conn.ensureMigrationTable();
       await conn.query(
