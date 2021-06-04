@@ -23,7 +23,7 @@ void main() {
       assert(conn.isOpen);
       await conn.ensureMigrationTable();
       await conn.query('''INSERT INTO $tbl (migration_id) VALUES ('ZZZZ')''');
-      final foo = await conn.query('select * from $tbl');
+      final foo = await conn.query('select migration_id from $tbl');
       expect(foo, [
         {
           tbl: {'migration_id': 'ZZZZ'}
