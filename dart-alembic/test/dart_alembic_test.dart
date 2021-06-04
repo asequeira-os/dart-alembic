@@ -1,4 +1,3 @@
-import 'package:dart_alembic/dart_alembic.dart';
 import 'package:dart_alembic/src/connector.dart';
 import 'package:test/test.dart';
 
@@ -6,7 +5,6 @@ import 'init_db.dart';
 
 void main() {
   group('A group of tests', () {
-    final awesome = Awesome();
     late AlembicConnector conn;
 
     setUp(() async {
@@ -31,7 +29,6 @@ void main() {
           tbl: {'migration_id': chars36}
         }
       ]);
-      expect(awesome.isAwesome, isTrue);
     });
   });
 }
