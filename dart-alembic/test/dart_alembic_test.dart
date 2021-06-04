@@ -17,16 +17,18 @@ void main() {
       await conn.close();
       await dropTestDatabase();
     });
- 
+
     test('DB basic operations check', () async {
+      final chars36 = '012345678901234567890123456789123456';
       final tbl = PostgresAlembicConnector.migrationTable;
       assert(conn.isOpen);
       await conn.ensureMigrationTable();
-      await conn.query('''INSERT INTO $tbl (migration_id, name) VALUES ('ZZZZ', 'fooo')''');
+      await conn.query(
+          '''INSERT INTO $tbl (migration_id, name) VALUES ('$chars36', 'fooo')''');
       final foo = await conn.query('select migration_id from $tbl');
       expect(foo, [
         {
-          tbl: {'migration_id': 'ZZZZ'}
+          tbl: {'migration_id': chars36}
         }
       ]);
       expect(awesome.isAwesome, isTrue);
