@@ -23,10 +23,10 @@ abstract class Migration {
   MigrationRow get asDbRow => MigrationRow(name, migrationId);
 
   /// implement using [conn]
-  Future<void> execute(AlembicConnector conn);
+  Future<void> execute(DbExecutor conn);
 
   /// undo is optional for now
-  void undo(AlembicConnector conn) {}
+  void undo(DbExecutor conn) {}
 }
 
 class Migrations {

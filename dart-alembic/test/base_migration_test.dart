@@ -6,7 +6,7 @@ class DummyMigration extends Migration {
   DummyMigration(String name) : super(name);
 
   @override
-  Future<void> execute(AlembicConnector conn) async {
+  Future<void> execute(DbExecutor conn) async {
   }
 
 }

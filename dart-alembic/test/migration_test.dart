@@ -10,7 +10,7 @@ class MigrationA extends Migration {
   MigrationA() : super('make table foo');
 
   @override
-  Future<void> execute(AlembicConnector conn) async {
+  Future<void> execute(DbExecutor conn) async {
     counter++;
     print('executing migration a');
     await conn.query('''
@@ -27,7 +27,7 @@ class MigrationB extends Migration {
   MigrationB() : super('alter table foo');
 
   @override
-  Future<void> execute(AlembicConnector conn) async {
+  Future<void> execute(DbExecutor conn) async {
     counter++;
     print('executing migration b');
     await conn.query('''
@@ -42,7 +42,7 @@ class MigrationC extends Migration {
   MigrationC() : super('table ccc');
 
   @override
-  Future<void> execute(AlembicConnector conn) async {
+  Future<void> execute(DbExecutor conn) async {
     counter++;
     print('executing migration ccc');
     await conn.query('''

@@ -22,20 +22,44 @@ class MigrationRow {
   }
 }
 
-abstract class AlembicConnector {
+abstract class DbExecutor {
+  Future<void> ddl(String sql, {QuerySubsitutions? params});
+  Future<SqlRows> query(String sql, {QuerySubsitutions? params});
+}
+
+abstract class AlembicConnector extends DbExecutor {
   Future<void> open();
   Future<void> close();
   bool get isOpen;
+  Future<void> transaction(
+    Future<void> Function(DbExecutor txconn) callback,
+  );
 
   Future<void> ensureMigrationTable();
-  Future<void> ddl(String sql, {QuerySubsitutions? params});
-  Future<SqlRows> query(String sql, {QuerySubsitutions? params});
 
   String get migrationTable;
   Future<void> addMigration(MigrationRow row);
 }
 
-class PostgresAlembicConnector extends AlembicConnector {
+class PostgresDbExecutor implements DbExecutor {
+  final PostgreSQLExecutionContext conn;
+
+  PostgresDbExecutor(this.conn);
+
+  @override
+  Future<void> ddl(String sql, {QuerySubsitutions? params}) async {
+    await conn.query(sql, substitutionValues: params);
+  }
+
+  @override
+  Future<SqlRows> query(String sql, {QuerySubsitutions? params}) {
+    return conn.mappedResultsQuery(sql, substitutionValues: params);
+  }
+}
+
+class PostgresAlembicConnector extends PostgresDbExecutor
+    implements AlembicConnector {
+  @override
   final PostgreSQLConnection conn;
   static const _migrationTable = '__migration';
   static const _tableSql = '''
@@ -50,7 +74,7 @@ class PostgresAlembicConnector extends AlembicConnector {
     VALUES (@migration_id, @name)
   ''';
 
-  PostgresAlembicConnector(this.conn);
+  PostgresAlembicConnector(this.conn) : super(conn);
 
   @override
   Future<void> open() async {
@@ -66,18 +90,8 @@ class PostgresAlembicConnector extends AlembicConnector {
   bool get isOpen => !conn.isClosed;
 
   @override
-  Future<void> ddl(String sql, {QuerySubsitutions? params}) async {
-    await conn.query(sql, substitutionValues: params);
-  }
-
-  @override
   Future<void> ensureMigrationTable() async {
     await conn.query(_tableSql);
-  }
-
-  @override
-  Future<SqlRows> query(String sql, {QuerySubsitutions? params}) {
-    return conn.mappedResultsQuery(sql, substitutionValues: params);
   }
 
   @override
@@ -86,5 +100,14 @@ class PostgresAlembicConnector extends AlembicConnector {
   @override
   Future<void> addMigration(MigrationRow row) async {
     await query(_insertSql, params: row.insertParams);
+  }
+
+  @override
+  Future<void> transaction(
+    Future<void> Function(DbExecutor txconn) callback,
+  ) async {
+    await conn.transaction((ctx) async {
+      await callback(PostgresDbExecutor(ctx));
+    });
   }
 }

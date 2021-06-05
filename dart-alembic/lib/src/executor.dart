@@ -30,7 +30,11 @@ class MigrationsExecutor {
       i++;
       if (i <= k) continue; // already applied
 
-      await migration.execute(conn);
+      await conn.transaction((
+        txconn,
+      ) async =>
+          await migration.execute(txconn));
+
       await conn.addMigration(migration.asDbRow);
     }
   }
