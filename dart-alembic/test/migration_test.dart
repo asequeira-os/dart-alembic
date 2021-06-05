@@ -13,6 +13,12 @@ class MigrationA extends Migration {
   Future<void> execute(AlembicConnector conn) async {
     counter++;
     print('executing migration a');
+    await conn.query('''
+      CREATE TABLE links (
+        link_id serial PRIMARY KEY,
+        title VARCHAR (512) NOT NULL,
+        url VARCHAR (1024) NOT NULL)
+    ''');
   }
 }
 
@@ -21,9 +27,13 @@ class MigrationB extends Migration {
   MigrationB() : super('alter table foo');
 
   @override
-  Future<void> execute(AlembicConnector conn)async {
+  Future<void> execute(AlembicConnector conn) async {
     counter++;
     print('executing migration b');
+    await conn.query('''
+      ALTER TABLE links
+      ADD COLUMN active boolean
+    ''');
   }
 }
 
@@ -35,6 +45,10 @@ class MigrationC extends Migration {
   Future<void> execute(AlembicConnector conn) async {
     counter++;
     print('executing migration ccc');
+    await conn.query('''
+      ALTER TABLE links 
+      RENAME COLUMN title TO link_title
+    ''');
   }
 }
 
@@ -77,7 +91,8 @@ void main() {
       expect(m1.counter, 1);
       expect(m2.counter, 1);
       expect(m3.counter, 1);
-
+      // should not throw
+      await conn.query('SELECT * from links');
     });
   });
 }
