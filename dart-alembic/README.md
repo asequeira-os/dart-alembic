@@ -1,19 +1,24 @@
-A library for Dart developers.
+# dart_alembic
+A dart relational database schema migration library.  
+Code at [github repo](https://github.com/asequeira-os/dart-alembic)
 
-## Usage
+Inspired by [Alembic](https://alembic.sqlalchemy.org/) for Python, but very basic.
 
-A simple usage example:
+Unit tested, but not yet used in any system.
 
-```dart
-import 'package:dart_alembic/dart_alembic.dart';
-
-main() {
-  var awesome = new Awesome();
-}
+# Install
+Add to your `pubspec.yaml`
+```
+dependencies:
+  ...
+  dart_alembic:
+    git:
+      url: git@github.com:asequeira-os/dart-alembic.git
+      path: dart-alembic
+  ...
 ```
 
-## Features and bugs
+and run `dart pub get`
 
-Please file feature requests and bugs at the [issue tracker][tracker].
-
-[tracker]: http://example.com/issues/replaceme
+# Usage
+Please see [migration_test](test/migration_test.dart)
