@@ -4,18 +4,6 @@ import 'connector.dart';
 
 const uuid = Uuid();
 
-class MigrationRow {
-  final String name;
-  final String id;
-  final DateTime? created;
-
-  MigrationRow(this.name, this.id) : created = null;
-  MigrationRow.fromJson(Map<String, dynamic> json)
-      : name = json['name'],
-        id = json['migration_id'],
-        created = json['created'];
-}
-
 abstract class Migration {
   /// should not be changed once specified.
   ///
@@ -35,23 +23,26 @@ abstract class Migration {
   MigrationRow get asDbRow => MigrationRow(name, migrationId);
 
   /// implement using [conn]
-  void execute(AlembicConnector conn);
+  Future<void> execute(AlembicConnector conn);
 
   /// undo is optional for now
   void undo(AlembicConnector conn) {}
 }
 
 class Migrations {
-  final Map<String, Migration> migrations = {};
+  final Map<String, Migration> _migrations = {};
   final List<String> order = [];
 
   void add(Migration migration) {
     final name = migration.name;
-    if (migrations.containsKey(name)) {
+    if (_migrations.containsKey(name)) {
       throw Exception('Duplicate migration $name');
     }
-    migrations[name] = migration;
+    _migrations[name] = migration;
     order.add(name);
   }
 
+  Migration? byName(String name) => _migrations[name];
+
+  Iterable<Migration> get migrations => order.map((n) => byName(n)!);
 }

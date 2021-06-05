@@ -6,28 +6,34 @@ import 'package:test/test.dart';
 import 'init_db.dart';
 
 class MigrationA extends Migration {
+  int counter = 0;
   MigrationA() : super('make table foo');
 
   @override
-  void execute(AlembicConnector conn) {
+  Future<void> execute(AlembicConnector conn) async {
+    counter++;
     print('executing migration a');
   }
 }
 
 class MigrationB extends Migration {
+  int counter = 0;
   MigrationB() : super('alter table foo');
 
   @override
-  void execute(AlembicConnector conn) {
+  Future<void> execute(AlembicConnector conn)async {
+    counter++;
     print('executing migration b');
   }
 }
 
 class MigrationC extends Migration {
+  int counter = 0;
   MigrationC() : super('table ccc');
 
   @override
-  void execute(AlembicConnector conn) {
+  Future<void> execute(AlembicConnector conn) async {
+    counter++;
     print('executing migration ccc');
   }
 }
@@ -47,15 +53,31 @@ void main() {
       await dropTestDatabase(DBNAME);
     });
 
-    test('Migrations should run', () async {
+    test('should run two sets', () async {
       final migs = Migrations();
-      migs.add(MigrationA());
-      migs.add(MigrationB());
+      final m1 = MigrationA();
+      final m2 = MigrationB();
+      final m3 = MigrationC();
+
+      migs.add(m1);
+      migs.add(m2);
 
       await MigrationsExecutor(migs).execute(conn);
+      expect(m1.counter, 1);
+      expect(m2.counter, 1);
+      expect(m3.counter, 0);
 
-      migs.add(MigrationC());
+      migs.add(m3);
       await MigrationsExecutor(migs).execute(conn);
+      expect(m1.counter, 1);
+      expect(m2.counter, 1);
+      expect(m3.counter, 1);
+
+      await MigrationsExecutor(migs).execute(conn);
+      expect(m1.counter, 1);
+      expect(m2.counter, 1);
+      expect(m3.counter, 1);
+
     });
   });
 }

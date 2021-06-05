@@ -1,6 +1,26 @@
 import 'package:postgres/postgres.dart';
 
 typedef SqlRows = List<Map<String, Map<String, dynamic>>>;
+typedef QuerySubsitutions = Map<String, dynamic>;
+
+class MigrationRow {
+  final String name;
+  final String id;
+  final DateTime? created;
+
+  MigrationRow(this.name, this.id) : created = null;
+  MigrationRow.fromJson(Map<String, dynamic> json)
+      : name = json['name'],
+        id = json['migration_id'],
+        created = json['created'];
+
+  QuerySubsitutions get insertParams {
+    return {
+      'migration_id': id,
+      'name': name,
+    };
+  }
+}
 
 abstract class AlembicConnector {
   Future<void> open();
@@ -8,10 +28,11 @@ abstract class AlembicConnector {
   bool get isOpen;
 
   Future<void> ensureMigrationTable();
-  Future<void> ddl(String sql);
-  Future<SqlRows> query(String sql);
+  Future<void> ddl(String sql, {QuerySubsitutions? params});
+  Future<SqlRows> query(String sql, {QuerySubsitutions? params});
 
   String get migrationTable;
+  Future<void> addMigration(MigrationRow row);
 }
 
 class PostgresAlembicConnector extends AlembicConnector {
@@ -23,6 +44,10 @@ class PostgresAlembicConnector extends AlembicConnector {
       name varchar(100) NOT NULL,
       created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
+  ''';
+  static const _insertSql = '''
+    INSERT INTO $_migrationTable (migration_id, name) 
+    VALUES (@migration_id, @name)
   ''';
 
   PostgresAlembicConnector(this.conn);
@@ -41,8 +66,8 @@ class PostgresAlembicConnector extends AlembicConnector {
   bool get isOpen => !conn.isClosed;
 
   @override
-  Future<void> ddl(String sql) async {
-    await conn.query(sql);
+  Future<void> ddl(String sql, {QuerySubsitutions? params}) async {
+    await conn.query(sql, substitutionValues: params);
   }
 
   @override
@@ -51,10 +76,15 @@ class PostgresAlembicConnector extends AlembicConnector {
   }
 
   @override
-  Future<SqlRows> query(String sql) {
-    return conn.mappedResultsQuery(sql);
+  Future<SqlRows> query(String sql, {QuerySubsitutions? params}) {
+    return conn.mappedResultsQuery(sql, substitutionValues: params);
   }
 
   @override
   String get migrationTable => _migrationTable;
+
+  @override
+  Future<void> addMigration(MigrationRow row) async {
+    await query(_insertSql, params: row.insertParams);
+  }
 }

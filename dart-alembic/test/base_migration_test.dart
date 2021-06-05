@@ -6,7 +6,7 @@ class DummyMigration extends Migration {
   DummyMigration(String name) : super(name);
 
   @override
-  void execute(AlembicConnector conn) {
+  Future<void> execute(AlembicConnector conn) async {
   }
 
 }
@@ -39,7 +39,7 @@ void main() {
     migs.add(m2);
     expect(migs.order[0], m1.name);
     expect(migs.order[1], m2.name);
-    expect(migs.migrations[m1.name], m1);
-    expect(migs.migrations[m2.name], m2);
+    expect(migs.byName(m1.name), m1);
+    expect(migs.byName(m2.name), m2);
   });
 }
